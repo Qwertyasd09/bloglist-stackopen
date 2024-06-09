@@ -112,7 +112,7 @@ test('a blog without likes can be added ', async () => {
   assert.strictEqual(blogsAtEnd.find(blog => blog.title === "jajajaja").likes, 0)
 })
 
-test.only('blog without title or url is not added', async () => {
+test('blog without title or url is not added', async () => {
   const newBlog = {
     author: "DEFEG",
     url: "http://DS.htmll",
@@ -127,6 +127,39 @@ test.only('blog without title or url is not added', async () => {
   const response = await api.get('/api/blogs')
 
   assert.strictEqual(response.body.length, helper.initialBlogs.length)
+})
+
+test('a blog can be deleted', async () => {
+  const blogsAtStart = await helper.blogsInDb()
+  const blogToDelete = blogsAtStart[0]
+
+  await api
+    .delete(`/api/blogs/${blogToDelete.id}`)
+    .expect(204)
+
+  const blogsAtEnd = await helper.blogsInDb()
+
+  const titles = blogsAtEnd.map(r => r.title)
+  assert(!titles.includes(blogToDelete.title))
+
+  assert.strictEqual(blogsAtEnd.length, helper.initialBlogs.length - 1)
+})
+
+test.only('a blog can be updated', async () => {
+  const blogsAtStart = await helper.blogsInDb()
+  const blogToUpdate = blogsAtStart[0]
+
+  const newBlog = {...blogToUpdate, title: "Actualizado"}
+
+  await api
+    .put(`/api/blogs/${blogToUpdate.id}`)
+    .send(newBlog)
+    .expect(200)
+
+  const blogsAtEnd = await helper.blogsInDb()
+  const titles = blogsAtEnd.map(r => r.title)
+  assert(titles.includes("Actualizado"))
+  assert.strictEqual(blogsAtEnd.length, helper.initialBlogs.length)
 })
 
 after(async () => {
