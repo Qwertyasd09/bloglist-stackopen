@@ -117,13 +117,11 @@ test.only('a blog can be deleted', async () => {
   const token = tokenResponse.body.token
   const blogsAtStart = await helper.blogsInDb()
   const blogToDelete = blogsAtStart[0]
-  console.log(await Blog.find({}))
   // await api
   //   .delete(`/api/blogs/${blogToDelete.id}`)
   //   .set({ Authorization: `Bearer ${token}` })
   //   .expect(204)
   // const blogsAtEnd = await helper.blogsInDb()
-  // console.log(blogsAtEnd)
   // const titles = blogsAtEnd.map(r => r.title)
   // assert(!titles.includes(blogToDelete.title))
   // assert.strictEqual(blogsAtEnd.length, helper.initialBlogs.length - 1)
