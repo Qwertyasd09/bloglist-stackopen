@@ -9,7 +9,12 @@ import { Togglable } from "./components/Togglable/Togglable";
 import "./index.css";
 import { useDispatch, useSelector } from "react-redux";
 import { setNotification } from "./reducers/notificationReducer";
-import { createBlog, deleteBlog, initializeBlogs, newVote } from "./reducers/blogsReducer";
+import {
+  createBlog,
+  deleteBlog,
+  initializeBlogs,
+  newVote,
+} from "./reducers/blogsReducer";
 
 const App = () => {
   const dispatch = useDispatch();
@@ -35,7 +40,7 @@ const App = () => {
 
   const fetchData = async () => {
     if (user !== null) {
-      dispatch(initializeBlogs())
+      dispatch(initializeBlogs());
     }
   };
 
@@ -74,11 +79,11 @@ const App = () => {
 
   const handleCreate = async (newBlog) => {
     blogFormRef.current.toggleVisibility();
-    dispatch(createBlog(newBlog))
+    dispatch(createBlog(newBlog));
   };
 
   const updateBlog = async (newInfoBlog) => {
-    dispatch(newVote(newInfoBlog), { dispatch })
+    dispatch(newVote(newInfoBlog), { dispatch });
   };
 
   const removeBlog = async (blogToDelete) => {
@@ -87,7 +92,7 @@ const App = () => {
         `Remove blog ${blogToDelete.title} by ${blogToDelete.author}?`,
       )
     ) {
-      dispatch(deleteBlog(blogToDelete), { dispatch })
+      dispatch(deleteBlog(blogToDelete), { dispatch });
     }
   };
 
