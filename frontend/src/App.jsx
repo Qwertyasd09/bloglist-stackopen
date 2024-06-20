@@ -8,21 +8,16 @@ import { CreateBlog } from "./components/CreateBlog/CreateBlog";
 import { Togglable } from "./components/Togglable/Togglable";
 import "./index.css";
 import { useDispatch, useSelector } from "react-redux";
-import { setNotification } from "./reducers/notificationReducer";
-import {
-  createBlog,
-  deleteBlog,
-  initializeBlogs,
-  newVote,
-} from "./reducers/blogsReducer";
+import { createBlog, deleteBlog, dispatchError, initializeBlogs, newVote } from "./reducers/blogsReducer";
+import { setUser } from "./reducers/userReducer";
 
 const App = () => {
   const dispatch = useDispatch();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [user, setUser] = useState(null);
   const notification = useSelector((state) => state.notification);
   const blogs = useSelector((state) => state.blogs);
+  const user = useSelector((state) => state.user)
 
   useEffect(() => {
     fetchData();
@@ -33,17 +28,18 @@ const App = () => {
     const loggedUserJSON = window.localStorage.getItem("loggedBlogListAppUser");
     if (loggedUserJSON) {
       const user = JSON.parse(loggedUserJSON);
-      setUser(user);
+      dispatch(setUser(user))
       blogService.setToken(user.token);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fetchData = async () => {
     if (user !== null) {
-      dispatch(initializeBlogs());
+      dispatch(initializeBlogs())
     }
   };
-
+  
   const handleLogin = async (event) => {
     event.preventDefault();
     try {
@@ -55,46 +51,33 @@ const App = () => {
         "loggedBlogListAppUser",
         JSON.stringify(user),
       );
-      setUser(user);
+      dispatch(setUser(user))
       blogService.setToken(user.token);
       setUsername("");
       setPassword("");
     } catch (exception) {
-      dispatch(
-        setNotification(
-          {
-            message: exception.response.data.error,
-            status: false,
-          },
-          5000,
-        ),
-      );
+      dispatchError(dispatch, exception)
     }
   };
 
   const handleLogOut = () => {
     window.localStorage.removeItem("loggedBlogListAppUser");
-    setUser(null);
+    dispatch(setUser(null))
   };
 
   const handleCreate = async (newBlog) => {
     blogFormRef.current.toggleVisibility();
-    dispatch(createBlog(newBlog));
+    dispatch(createBlog(newBlog))
   };
 
   const updateBlog = async (newInfoBlog) => {
-    dispatch(newVote(newInfoBlog), { dispatch });
+    dispatch(newVote(newInfoBlog), { dispatch })
   };
 
   const removeBlog = async (blogToDelete) => {
-    if (
-      window.confirm(
-        `Remove blog ${blogToDelete.title} by ${blogToDelete.author}?`,
-      )
-    ) {
-      dispatch(deleteBlog(blogToDelete), { dispatch });
-    }
-  };
+    if (window.confirm(`Remove blog ${blogToDelete.title} by ${blogToDelete.author}?`)) {
+      dispatch(deleteBlog(blogToDelete), { dispatch })
+  }};
 
   const blogFormRef = useRef();
 

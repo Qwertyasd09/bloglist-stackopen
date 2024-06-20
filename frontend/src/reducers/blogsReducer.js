@@ -81,7 +81,7 @@ export const createBlog = (content) => {
   };
 };
 
-const dispatchError = (dispatch, exception) => {
+export const dispatchError = (dispatch, exception) => {
   dispatch(
     setNotification(
       {
