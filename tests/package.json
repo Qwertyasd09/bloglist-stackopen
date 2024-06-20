@@ -5,12 +5,14 @@
   "main": "index.js",
   "scripts": {
     "test": "playwright test",
-    "test:report": "playwright show-report"
+    "test:report": "playwright show-report",
+    "pretty": "prettier --write \"./**/*.{js,jsx,mjs,cjs,ts,tsx,json}\""
   },
   "author": "",
   "license": "ISC",
   "devDependencies": {
     "@playwright/test": "^1.44.1",
-    "@types/node": "^20.14.2"
+    "@types/node": "^20.14.2",
+    "prettier": "^3.3.2"
   }
 }
