@@ -9,14 +9,15 @@ import { Togglable } from "./components/Togglable/Togglable";
 import "./index.css";
 import { useDispatch, useSelector } from "react-redux";
 import { setNotification } from "./reducers/notificationReducer";
+import { createBlog, deleteBlog, initializeBlogs, newVote } from "./reducers/blogsReducer";
 
 const App = () => {
   const dispatch = useDispatch();
-  const [blogs, setBlogs] = useState([]);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [user, setUser] = useState(null);
   const notification = useSelector((state) => state.notification);
+  const blogs = useSelector((state) => state.blogs);
 
   useEffect(() => {
     fetchData();
@@ -34,8 +35,7 @@ const App = () => {
 
   const fetchData = async () => {
     if (user !== null) {
-      const blogs = await blogService.getAll();
-      setBlogs(blogs.sort(({ likes: a }, { likes: b }) => b - a));
+      dispatch(initializeBlogs())
     }
   };
 
@@ -73,82 +73,21 @@ const App = () => {
   };
 
   const handleCreate = async (newBlog) => {
-    try {
-      blogFormRef.current.toggleVisibility();
-      const returnedBlog = await blogService.create(newBlog);
-      setBlogs(blogs.concat(returnedBlog));
-      dispatch(
-        setNotification(
-          {
-            message: `a new blog ${newBlog.title} by ${newBlog.author} added`,
-            status: true,
-          },
-          5000,
-        ),
-      );
-    } catch (exception) {
-      dispatch(
-        setNotification(
-          {
-            message: exception.response.data.error,
-            status: false,
-          },
-          5000,
-        ),
-      );
-    }
+    blogFormRef.current.toggleVisibility();
+    dispatch(createBlog(newBlog))
   };
 
   const updateBlog = async (newInfoBlog) => {
-    try {
-      const returnedBlog = await blogService.update(newInfoBlog);
-      setBlogs(
-        blogs
-          .map((blog) => (blog.id === newInfoBlog.id ? returnedBlog : blog))
-          .sort(({ likes: a }, { likes: b }) => b - a),
-      );
-    } catch (exception) {
-      dispatch(
-        setNotification(
-          {
-            message: exception.response.data.error,
-            status: false,
-          },
-          5000,
-        ),
-      );
-    }
+    dispatch(newVote(newInfoBlog), { dispatch })
   };
 
   const removeBlog = async (blogToDelete) => {
-    try {
-      if (
-        window.confirm(
-          `Remove blog ${blogToDelete.title} by ${blogToDelete.author}?`,
-        )
-      ) {
-        await blogService.remove(blogToDelete);
-        setBlogs(blogs.filter((blog) => blog.id !== blogToDelete.id));
-        dispatch(
-          setNotification(
-            {
-              message: `the blog ${blogToDelete.title} by ${blogToDelete.author} has been removed successfully`,
-              status: true,
-            },
-            5000,
-          ),
-        );
-      }
-    } catch (exception) {
-      dispatch(
-        setNotification(
-          {
-            message: exception.response.data.error,
-            status: false,
-          },
-          5000,
-        ),
-      );
+    if (
+      window.confirm(
+        `Remove blog ${blogToDelete.title} by ${blogToDelete.author}?`,
+      )
+    ) {
+      dispatch(deleteBlog(blogToDelete), { dispatch })
     }
   };
 

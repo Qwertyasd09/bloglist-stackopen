@@ -9,7 +9,7 @@ const setToken = (token) => {
 
 const getAll = async () => {
   const response = await axios.get(baseUrl, config);
-  return response.data;
+  return response.data
 };
 
 const create = async (newBlog) => {
