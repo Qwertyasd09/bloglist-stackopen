@@ -1,6 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
-import loginService from "../services/login"
-import blogService from "../services/blogs"
+import loginService from "../services/login";
+import blogService from "../services/blogs";
 import { setNotification } from "./notificationReducer";
 import { dispatchError } from "./blogsReducer";
 
@@ -9,13 +9,13 @@ const userSlice = createSlice({
   initialState: null,
   reducers: {
     setUser(state, action) {
-      return action.payload
-    }
-  }
+      return action.payload;
+    },
+  },
 });
 
 export const login = (username, password) => {
-  return async dispatch => {
+  return async (dispatch) => {
     try {
       const user = await loginService.login({
         username,
@@ -26,19 +26,25 @@ export const login = (username, password) => {
         JSON.stringify(user),
       );
       blogService.setToken(user.token);
-      dispatch(setUser(user))
-      dispatch(setNotification({message: `${user.username} successfully logged in`, status: true}, 5000))
+      dispatch(setUser(user));
+      dispatch(
+        setNotification(
+          { message: `${user.username} successfully logged in`, status: true },
+          5000,
+        ),
+      );
     } catch (exception) {
-      dispatchError(dispatch, exception)
-    }}
-}
+      dispatchError(dispatch, exception);
+    }
+  };
+};
 
 export const logout = () => {
-  return async dispatch => {
+  return async (dispatch) => {
     window.localStorage.removeItem("loggedBlogListAppUser");
-    dispatch(setUser(null))
-  }
-}
+    dispatch(setUser(null));
+  };
+};
 
 export const { setUser } = userSlice.actions;
 export default userSlice.reducer;
