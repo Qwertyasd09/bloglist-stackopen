@@ -9,7 +9,7 @@ import { Togglable } from "./components/Togglable/Togglable";
 import "./index.css";
 import { useDispatch, useSelector } from "react-redux";
 import { createBlog, deleteBlog, dispatchError, initializeBlogs, newVote } from "./reducers/blogsReducer";
-import { setUser } from "./reducers/userReducer";
+import { logout, setUser, login } from "./reducers/userReducer";
 
 const App = () => {
   const dispatch = useDispatch();
@@ -28,8 +28,8 @@ const App = () => {
     const loggedUserJSON = window.localStorage.getItem("loggedBlogListAppUser");
     if (loggedUserJSON) {
       const user = JSON.parse(loggedUserJSON);
-      dispatch(setUser(user))
       blogService.setToken(user.token);
+      dispatch(setUser(user))
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -42,27 +42,13 @@ const App = () => {
   
   const handleLogin = async (event) => {
     event.preventDefault();
-    try {
-      const user = await loginService.login({
-        username,
-        password,
-      });
-      window.localStorage.setItem(
-        "loggedBlogListAppUser",
-        JSON.stringify(user),
-      );
-      dispatch(setUser(user))
-      blogService.setToken(user.token);
-      setUsername("");
-      setPassword("");
-    } catch (exception) {
-      dispatchError(dispatch, exception)
-    }
+    dispatch(login(username, password))
+    setUsername("");
+    setPassword("");
   };
 
   const handleLogOut = () => {
-    window.localStorage.removeItem("loggedBlogListAppUser");
-    dispatch(setUser(null))
+    dispatch(logout())
   };
 
   const handleCreate = async (newBlog) => {
