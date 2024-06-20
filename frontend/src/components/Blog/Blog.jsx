@@ -74,5 +74,5 @@ Blog.propTypes = {
   user: PropTypes.object.isRequired,
   blog: PropTypes.object.isRequired,
   updateBlog: PropTypes.func.isRequired,
-  removeBlog: PropTypes.func.isRequired
+  removeBlog: PropTypes.func.isRequired,
 };

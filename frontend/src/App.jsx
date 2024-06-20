@@ -7,16 +7,16 @@ import { Notification } from "./components/Notification/Notification";
 import { CreateBlog } from "./components/CreateBlog/CreateBlog";
 import { Togglable } from "./components/Togglable/Togglable";
 import "./index.css";
+import { useDispatch, useSelector } from "react-redux";
+import { setNotification } from "./reducers/notificationReducer";
 
 const App = () => {
+  const dispatch = useDispatch();
   const [blogs, setBlogs] = useState([]);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [user, setUser] = useState(null);
-  const [messageInfo, setMessageInfo] = useState({
-    message: null,
-    status: false,
-  });
+  const notification = useSelector((state) => state.notification);
 
   useEffect(() => {
     fetchData();
@@ -55,16 +55,15 @@ const App = () => {
       setUsername("");
       setPassword("");
     } catch (exception) {
-      setMessageInfo({
-        message: exception.response.data.error,
-        status: false,
-      });
-      setTimeout(() => {
-        setMessageInfo({
-          message: null,
-          status: false,
-        });
-      }, 5000);
+      dispatch(
+        setNotification(
+          {
+            message: exception.response.data.error,
+            status: false,
+          },
+          5000,
+        ),
+      );
     }
   };
 
@@ -78,27 +77,25 @@ const App = () => {
       blogFormRef.current.toggleVisibility();
       const returnedBlog = await blogService.create(newBlog);
       setBlogs(blogs.concat(returnedBlog));
-      setMessageInfo({
-        message: `a new blog ${newBlog.title} by ${newBlog.author} added`,
-        status: true,
-      });
-      setTimeout(() => {
-        setMessageInfo({
-          message: null,
-          status: false,
-        });
-      }, 5000);
+      dispatch(
+        setNotification(
+          {
+            message: `a new blog ${newBlog.title} by ${newBlog.author} added`,
+            status: true,
+          },
+          5000,
+        ),
+      );
     } catch (exception) {
-      setMessageInfo({
-        message: exception.response.data.error,
-        status: false,
-      });
-      setTimeout(() => {
-        setMessageInfo({
-          message: null,
-          status: false,
-        });
-      }, 5000);
+      dispatch(
+        setNotification(
+          {
+            message: exception.response.data.error,
+            status: false,
+          },
+          5000,
+        ),
+      );
     }
   };
 
@@ -111,16 +108,15 @@ const App = () => {
           .sort(({ likes: a }, { likes: b }) => b - a),
       );
     } catch (exception) {
-      setMessageInfo({
-        message: exception.response.data.error,
-        status: false,
-      });
-      setTimeout(() => {
-        setMessageInfo({
-          message: null,
-          status: false,
-        });
-      }, 5000);
+      dispatch(
+        setNotification(
+          {
+            message: exception.response.data.error,
+            status: false,
+          },
+          5000,
+        ),
+      );
     }
   };
 
@@ -133,28 +129,26 @@ const App = () => {
       ) {
         await blogService.remove(blogToDelete);
         setBlogs(blogs.filter((blog) => blog.id !== blogToDelete.id));
-        setMessageInfo({
-          message: `the blog ${blogToDelete.title} by ${blogToDelete.author} has been removed successfully`,
-          status: true,
-        });
-        setTimeout(() => {
-          setMessageInfo({
-            message: null,
-            status: false,
-          });
-        }, 5000);
+        dispatch(
+          setNotification(
+            {
+              message: `the blog ${blogToDelete.title} by ${blogToDelete.author} has been removed successfully`,
+              status: true,
+            },
+            5000,
+          ),
+        );
       }
     } catch (exception) {
-      setMessageInfo({
-        message: exception.response.data.error,
-        status: false,
-      });
-      setTimeout(() => {
-        setMessageInfo({
-          message: null,
-          status: false,
-        });
-      }, 5000);
+      dispatch(
+        setNotification(
+          {
+            message: exception.response.data.error,
+            status: false,
+          },
+          5000,
+        ),
+      );
     }
   };
 
@@ -172,8 +166,8 @@ const App = () => {
             Log out
           </button>
           <Notification
-            message={messageInfo.message}
-            status={messageInfo.status}
+            message={notification.message}
+            status={notification.status}
           />
           <Togglable buttonLabel="new blog" ref={blogFormRef}>
             <CreateBlog handleCreate={handleCreate} />
@@ -193,8 +187,8 @@ const App = () => {
         <Fragment>
           <h2>log in to application</h2>
           <Notification
-            message={messageInfo.message}
-            status={messageInfo.status}
+            message={notification.message}
+            status={notification.status}
           />
           <Login
             handleLogin={handleLogin}

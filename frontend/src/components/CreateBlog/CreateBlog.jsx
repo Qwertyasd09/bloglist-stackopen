@@ -59,5 +59,5 @@ export const CreateBlog = ({ handleCreate }) => {
 };
 
 CreateBlog.propTypes = {
-  handleCreate: PropTypes.func.isRequired
+  handleCreate: PropTypes.func.isRequired,
 };
