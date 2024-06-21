@@ -16,6 +16,6 @@ export const Notification = ({ message, status }) => {
 };
 
 Notification.propTypes = {
-  message: PropTypes.string.isRequired,
-  status: PropTypes.bool.isRequired,
+  message: PropTypes.string,
+  status: PropTypes.bool,
 };

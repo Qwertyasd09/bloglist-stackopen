@@ -1,4 +1,4 @@
-import { useState, useEffect, Fragment, useRef } from "react";
+import { useState, useEffect, Fragment, useRef, useContext } from "react";
 import Blog from "./components/Blog/Blog";
 import blogService from "./services/blogs";
 import { Login } from "./components/Login/Login";
@@ -7,16 +7,19 @@ import { Notification } from "./components/Notification/Notification";
 import { CreateBlog } from "./components/CreateBlog/CreateBlog";
 import { Togglable } from "./components/Togglable/Togglable";
 import "./index.css";
+import NotificationContext, {
+  createBlogNotification,
+  dismissNotification,
+  errorBlogNotification,
+  removeBlogNotification,
+} from "./context/BlogListContext";
 
 const App = () => {
   const [blogs, setBlogs] = useState([]);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [user, setUser] = useState(null);
-  const [messageInfo, setMessageInfo] = useState({
-    message: null,
-    status: false,
-  });
+  const [messageInfo, dispatch] = useContext(NotificationContext);
 
   useEffect(() => {
     fetchData();
@@ -55,15 +58,9 @@ const App = () => {
       setUsername("");
       setPassword("");
     } catch (exception) {
-      setMessageInfo({
-        message: exception.response.data.error,
-        status: false,
-      });
+      dispatch(errorBlogNotification(exception));
       setTimeout(() => {
-        setMessageInfo({
-          message: null,
-          status: false,
-        });
+        dispatch(dismissNotification());
       }, 5000);
     }
   };
@@ -78,26 +75,14 @@ const App = () => {
       blogFormRef.current.toggleVisibility();
       const returnedBlog = await blogService.create(newBlog);
       setBlogs(blogs.concat(returnedBlog));
-      setMessageInfo({
-        message: `a new blog ${newBlog.title} by ${newBlog.author} added`,
-        status: true,
-      });
+      dispatch(createBlogNotification(newBlog));
       setTimeout(() => {
-        setMessageInfo({
-          message: null,
-          status: false,
-        });
+        dispatch(dismissNotification());
       }, 5000);
     } catch (exception) {
-      setMessageInfo({
-        message: exception.response.data.error,
-        status: false,
-      });
+      dispatch(errorBlogNotification(exception));
       setTimeout(() => {
-        setMessageInfo({
-          message: null,
-          status: false,
-        });
+        dispatch(dismissNotification());
       }, 5000);
     }
   };
@@ -111,15 +96,9 @@ const App = () => {
           .sort(({ likes: a }, { likes: b }) => b - a),
       );
     } catch (exception) {
-      setMessageInfo({
-        message: exception.response.data.error,
-        status: false,
-      });
+      dispatch(errorBlogNotification(exception));
       setTimeout(() => {
-        setMessageInfo({
-          message: null,
-          status: false,
-        });
+        dispatch(dismissNotification());
       }, 5000);
     }
   };
@@ -133,27 +112,15 @@ const App = () => {
       ) {
         await blogService.remove(blogToDelete);
         setBlogs(blogs.filter((blog) => blog.id !== blogToDelete.id));
-        setMessageInfo({
-          message: `the blog ${blogToDelete.title} by ${blogToDelete.author} has been removed successfully`,
-          status: true,
-        });
+        dispatch(removeBlogNotification(blogToDelete));
         setTimeout(() => {
-          setMessageInfo({
-            message: null,
-            status: false,
-          });
+          dispatch(dismissNotification());
         }, 5000);
       }
     } catch (exception) {
-      setMessageInfo({
-        message: exception.response.data.error,
-        status: false,
-      });
+      dispatch(errorBlogNotification(exception));
       setTimeout(() => {
-        setMessageInfo({
-          message: null,
-          status: false,
-        });
+        dispatch(dismissNotification());
       }, 5000);
     }
   };
