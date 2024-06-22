@@ -1,4 +1,4 @@
-import { createContext, useReducer, useContext } from "react";
+import { createContext, useReducer } from "react";
 
 const notificationReducer = (state, action) => {
   switch (action.type) {
@@ -27,34 +27,47 @@ const notificationReducer = (state, action) => {
   }
 };
 
-const NotificationContext = createContext();
+const userReducer = (state, action) => {
+  switch (action.type) {
+    case "LOGIN":
+      window.localStorage.setItem(
+        "loggedBlogListAppUser",
+        JSON.stringify(action.payload),
+      );
+      return action.payload;
+    case "LOGOUT":
+      window.localStorage.removeItem("loggedBlogListAppUser");
+      return null;
+    case "SET_USER":
+      return action.payload;
+    default:
+      return state;
+  }
+};
 
-export const NotificationContextProvider = (props) => {
-  const initialState = {
+const BlogContext = createContext();
+
+export const BlogContextProvider = (props) => {
+  const initialStateNotification = {
     message: null,
     status: false,
   };
+  const initialStateUser = null;
   const [notification, notificationDispatch] = useReducer(
     notificationReducer,
-    initialState,
+    initialStateNotification,
   );
+  const [user, userDispatch] = useReducer(userReducer, initialStateUser);
   return (
-    <NotificationContext.Provider value={[notification, notificationDispatch]}>
+    <BlogContext.Provider
+      value={[notification, notificationDispatch, user, userDispatch]}
+    >
       {props.children}
-    </NotificationContext.Provider>
+    </BlogContext.Provider>
   );
 };
 
-// NOT NEEDED, BUT JUST IN CASE
-export const useNotificationValue = () => {
-  const notificationAndDispatch = useContext(NotificationContext);
-  return notificationAndDispatch[0];
-};
-
-export const useNotificationDispatch = () => {
-  const notificationAndDispatch = useContext(NotificationContext);
-  return notificationAndDispatch[1];
-};
+// ACTION CREATORS NOTIFICATION
 
 export const createBlogNotification = (messageInfo) => {
   return {
@@ -83,4 +96,26 @@ export const dismissNotification = () => {
   };
 };
 
-export default NotificationContext;
+// ACTION CREATORS USER
+
+export const loginUser = (credentials) => {
+  return {
+    type: "LOGIN",
+    payload: credentials,
+  };
+};
+
+export const logoutUser = () => {
+  return {
+    type: "LOGOUT",
+  };
+};
+
+export const setUser = (user) => {
+  return {
+    type: "SET_USER",
+    payload: user,
+  };
+};
+
+export default BlogContext;

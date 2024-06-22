@@ -7,59 +7,60 @@ import { Notification } from "./components/Notification/Notification";
 import { CreateBlog } from "./components/CreateBlog/CreateBlog";
 import { Togglable } from "./components/Togglable/Togglable";
 import "./index.css";
-import NotificationContext, {
+import BlogContext, {
   createBlogNotification,
   dismissNotification,
   errorBlogNotification,
+  loginUser,
+  logoutUser,
   removeBlogNotification,
 } from "./context/BlogListContext";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { setUser } from "./context/BlogListContext";
 
 const App = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [user, setUser] = useState(null);
-  const [messageInfo, dispatch] = useContext(NotificationContext);
-
-  const queryClient = useQueryClient()
-
-  const { isPending, isError, data: blogs, error } = useQuery({
+  const [messageInfo, dispatch, user, userDispatch] = useContext(BlogContext);
+  const queryClient = useQueryClient();
+  const { data: blogs } = useQuery({
     queryKey: ["blogs"],
     queryFn: blogService.getAll,
     retry: 1,
-    enabled: user !== null
-  },)
-  
-  const newBlogMutation = useMutation({ 
+    enabled: user !== null,
+  });
+
+  const newBlogMutation = useMutation({
     mutationFn: blogService.create,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["blogs"] })
-    } 
-  })
+      queryClient.invalidateQueries({ queryKey: ["blogs"] });
+    },
+  });
 
   const updateBlogMutation = useMutation({
     mutationFn: blogService.update,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['blogs'] })
-    }
-  })
+      queryClient.invalidateQueries({ queryKey: ["blogs"] });
+    },
+  });
 
   const removeBlogMutation = useMutation({
     mutationFn: blogService.remove,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['blogs'] })
-    }
-  })
-  
+      queryClient.invalidateQueries({ queryKey: ["blogs"] });
+    },
+  });
+
   const blogFormRef = useRef();
 
   useEffect(() => {
     const loggedUserJSON = window.localStorage.getItem("loggedBlogListAppUser");
     if (loggedUserJSON) {
       const user = JSON.parse(loggedUserJSON);
-      setUser(user);
+      userDispatch(setUser(user));
       blogService.setToken(user.token);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleLogin = async (event) => {
@@ -69,11 +70,7 @@ const App = () => {
         username,
         password,
       });
-      window.localStorage.setItem(
-        "loggedBlogListAppUser",
-        JSON.stringify(user),
-      );
-      setUser(user);
+      userDispatch(loginUser(user));
       blogService.setToken(user.token);
       setUsername("");
       setPassword("");
@@ -86,14 +83,13 @@ const App = () => {
   };
 
   const handleLogOut = () => {
-    window.localStorage.removeItem("loggedBlogListAppUser");
-    setUser(null);
+    userDispatch(logoutUser());
   };
 
   const handleCreate = async (newBlog) => {
     try {
       blogFormRef.current.toggleVisibility();
-      newBlogMutation.mutate(newBlog)
+      newBlogMutation.mutate(newBlog);
       dispatch(createBlogNotification(newBlog));
       setTimeout(() => {
         dispatch(dismissNotification());
@@ -108,7 +104,7 @@ const App = () => {
 
   const updateBlog = async (newInfoBlog) => {
     try {
-      updateBlogMutation.mutate(newInfoBlog)
+      updateBlogMutation.mutate(newInfoBlog);
     } catch (exception) {
       dispatch(errorBlogNotification(exception));
       setTimeout(() => {
@@ -124,7 +120,7 @@ const App = () => {
           `Remove blog ${blogToDelete.title} by ${blogToDelete.author}?`,
         )
       ) {
-        removeBlogMutation.mutate(blogToDelete)
+        removeBlogMutation.mutate(blogToDelete);
         dispatch(removeBlogNotification(blogToDelete));
         setTimeout(() => {
           dispatch(dismissNotification());
@@ -138,12 +134,10 @@ const App = () => {
     }
   };
 
-  if (!blogs) return null;
-
   return (
     <div>
       <h2>blogs</h2>
-      {user ? (
+      {user && blogs ? (
         <Fragment>
           <p style={{ margin: "0" }}>{user.name} logged in</p>
           <button onClick={handleLogOut} style={{ marginBottom: "1rem" }}>
