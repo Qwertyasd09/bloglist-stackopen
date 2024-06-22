@@ -18,3 +18,9 @@
 p {
     margin: 0;
 }
+
+th {
+    text-align: left;
+    font-weight: 400;
+}
+
