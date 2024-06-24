@@ -37,6 +37,10 @@ const blogSlice = createSlice({
     appendBlog(state, action) {
       state.push(action.payload);
     },
+    appendComment(state, action) {
+      const idBlogToChange = action.payload.id
+      return state.map(blog => blog.id === idBlogToChange ? action.payload : blog)
+    }
   },
   extraReducers: (builder) => {
     builder.addCase(newVote.fulfilled, (state, action) => {
@@ -45,14 +49,14 @@ const blogSlice = createSlice({
         .map((blog) => (blog.id === newBlog.id ? newBlog : blog))
         .sort(({ likes: a }, { likes: b }) => b - a);
     }),
-      builder.addCase(deleteBlog.fulfilled, (state, action) => {
-        const idBlogToDelete = action.meta.arg.id;
-        return state.filter((blog) => blog.id !== idBlogToDelete);
-      });
-  },
+    builder.addCase(deleteBlog.fulfilled, (state, action) => {
+      const idBlogToDelete = action.meta.arg.id;
+      return state.filter((blog) => blog.id !== idBlogToDelete);
+    })
+  }
 });
 
-export const { setBlogs, appendBlog } = blogSlice.actions;
+export const { setBlogs, appendBlog, appendComment } = blogSlice.actions;
 
 export const initializeBlogs = () => {
   return async (dispatch) => {
@@ -75,6 +79,17 @@ export const createBlog = (content) => {
           5000,
         ),
       );
+    } catch (exception) {
+      dispatchError(dispatch, exception);
+    }
+  };
+};
+
+export const createComment = (comment, blogToAddComment) => {
+  return async (dispatch) => {
+    try {
+      const newUpdatedBlog = await blogService.addComment(comment, blogToAddComment);
+      dispatch(appendComment(newUpdatedBlog));
     } catch (exception) {
       dispatchError(dispatch, exception);
     }

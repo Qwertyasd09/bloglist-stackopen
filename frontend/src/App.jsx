@@ -9,12 +9,14 @@ import "./index.css";
 import { useDispatch, useSelector } from "react-redux";
 import {
   createBlog,
+  createComment,
   deleteBlog,
   initializeBlogs,
+  // newComment,
   newVote,
 } from "./reducers/blogsReducer";
 import { logout, setUser, login } from "./reducers/userReducer";
-import { Routes, Route, useMatch, Link } from "react-router-dom";
+import { Routes, Route, useMatch, Link, useNavigate } from "react-router-dom";
 import userService from "./services/users";
 import { initializeUsersDatabase } from "./reducers/usersDatabaseReducer";
 
@@ -26,6 +28,7 @@ const App = () => {
   const blogs = useSelector((state) => state.blogs);
   const user = useSelector((state) => state.user);
   const usersDatabase = useSelector((state) => state.usersDatabase);
+  const navigate = useNavigate()
 
   useEffect(() => {
     fetchData();
@@ -68,6 +71,7 @@ const App = () => {
 
   const handleLogOut = () => {
     dispatch(logout());
+    navigate("/")
   };
 
   const handleCreate = async (newBlog) => {
@@ -117,7 +121,7 @@ const App = () => {
       borderRadius: "4px",
     };
     const [updatedBlog, setUpdatedBlog] = useState(blog);
-
+    const [comment, setComment] = useState("")
     const increaseLikes = () => {
       const newBlog = {
         ...blog,
@@ -127,12 +131,21 @@ const App = () => {
       setUpdatedBlog(newBlog);
     };
 
+    const handleComment = async (event) => {
+      event.preventDefault()
+      const currentComment = {
+        comment: comment
+      }
+      dispatch(createComment(currentComment, updatedBlog))
+      setComment("")
+    }
+
     if (!blog) return null;
 
     return (
       <>
         <h2>
-          {updatedBlog.title} {updatedBlog.author}
+          {updatedBlog.title} by {updatedBlog.author}
         </h2>
         <a href={updatedBlog.url}>{updatedBlog.url}</a>
         <div className="likesDiv">
@@ -142,11 +155,16 @@ const App = () => {
           </button>
         </div>
         <p>added by {updatedBlog.user.name}</p>
-        {/* {updatedBlog.user.username === user.username && (
-          <button onClick={() => removeBlog(updatedBlog)} style={btnStyle}>
-            remove
-          </button>
-        )} */}
+        <h2>comments</h2>
+        <form onSubmit={handleComment}>
+          <input value={comment} type="text" onChange={(e) => setComment(e.target.value)}/>
+          <input type="submit" value="add comment"/>
+        </form>
+        <ul>
+          {updatedBlog.comments.length !== 0 
+            ? updatedBlog.comments.map(comment => <li key={comment.id}>{comment.comment}</li>) 
+            : <h3>No comments for entry {updatedBlog.title}</h3>}
+        </ul>
       </>
     );
   };
@@ -158,7 +176,6 @@ const App = () => {
           message={notification.message}
           status={notification.status}
         />
-
         <Routes>
           <Route path="/blogs/:id" element={<BlogView blog={currentBlog} />} />
           <Route path="/" element={<BlogList />} />
